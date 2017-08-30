@@ -1,0 +1,249 @@
+Writing API with Functional Options
+GoJakarta
+
+31 Aug 2017
+
+Randy Cahyana
+randy@brank.as
+
+* What is Functional Options ?
+
+- Solve configuration problems.
+- Idiomatic
+- Commonly used in Go 
+
+* Scenario
+
+.image images/scenario.jpg 550 800
+
+* It's Goffee Time
+
+    packages goffee
+
+    // Brew send instructions to immidiately brew coffee from given coffeType
+    func Brew(t CoffeType) {
+        var err error
+        
+        ingredients, err = getRecipes(t)
+        if err != nil {
+            log.Fatal(err)
+        }
+        
+        //... some secret brew techniques
+    }
+
+Usage:
+
+    goffee.Brew(goffee.Espresso)
+
+* Feature: Provide number of cups
+
+New feature? Easy!
+
+    packages goffee
+
+    // Brew send instructions to immidiately brew coffee from given coffeType
+    func Brew(t CoffeType, cups uint32) {
+        var err error
+        
+        ingredients, err = getRecipes(t)
+        if err != nil {
+            log.Fatal(err)
+        }
+        
+        //... some secret brew techniques
+    }
+
+Usage:
+
+    goffee.Brew(goffee.Espresso, 2)
+
+
+* Attack of The Features
+
+.image images/feature.jpg 550 800
+
+
+* It's a disastah!
+
+    package goffee
+
+    // Brew send instructions to immidiately brew coffee from given coffeType, cups
+    // identify number of cups, sugar determines sugar level, ice determines 
+    // ice level, cream determines cream types.
+    func Brew(t CoffeType, cups uint32, takeAway bool,
+        sugar SugarOptions, ice IceOptions, cream CreamOptions) {
+            //...
+    }
+
+Problems
+
+- function signature changes every new feature released
+- hidden documentation
+    goffee.Brew(goffee.Espresso, 1, false, nil, nil, nil)
+
+* Solution: Configurations Struct
+
+    type Config struct {
+        Cups        uint32
+        TakeAway    bool
+        Sugar       SugarOptions
+        Ice         IceOptions
+        Cream       CreamOptions
+    }
+
+    func Brew(t CoffeType, c *Config) {
+        //...
+    }
+
+Usage:
+
+    config := new goffee.Config {
+        cups     : 1,
+        takeAway : false,
+        sugar    : goffee.LessSugar,
+        ice      : goffee.LessIce,
+        cream    : goffee.None
+    }
+
+    goffee.Brew(goffe.Espresso, &config)
+
+
+* Pros & Cons
+
+Pros:
+
+- Better documentation
+- Function signature remains unchanged
+
+Cons:
+
+- Default behaviour
+    // force user to create struct config to provide default behaviour
+    config := new goffee.Config {}
+    goffee.Brew(goffee.Espresso, &config)
+
+    or
+    
+    // nil as parameter
+    goffee.Brew(goffee.Espresso, nil)
+
+
+* Other solution: Lot's of methods
+
+    func Brew(t CoffeType) {//..}
+
+    func BrewIcedCoffe(t CoffeType) {//...}
+
+    func BrewHotCoffee(t CoffeType) {//...}
+
+    func BrewBlahBlahBlah(t CoffeType) {//...}
+
+Pros
+
+- Well documented
+- Common interface for all various implementations
+
+Cons
+
+- Hard to maintain if every permutations *written* *manually*
+
+
+* Meet Functional Options
+
+- Functions as parameter
+
+    type Option func(*Config)
+
+    func WithSugar(s SugarOptions) Option {
+        return func(c *Config) {
+            c.sugar = s
+        }
+    }
+
+    func WithSugarCalories(cal uint32) Option {
+        return func(c *Config) {
+            c.sugar = sugar.CalConv(cal)
+        }
+    }
+
+
+- And it's optional
+    func Brew(t CoffeType, opts ...Option) {//...}
+
+* Functional Options (cont.)
+
+- Applying options
+
+    func Brew(t CoffeeType, opts ...Option) {
+        config := &Config {
+            // default value
+        }
+
+        for _, o := opts {
+            o(config)
+        }
+    }
+
+- Usage on client code
+
+    goffee.Brew(goffee.Espresso)
+
+    or
+
+    goffee.Brew(goffee.Espresso, goffee.WithSugarCalories(200), goffee.TakeAway())  
+
+* Functional Options (cont.)
+
+    package goffee
+
+    type CoffeType string
+    type Config struct {//...}
+    type Option func(*Config)
+
+    func Brew(t CoffeType, opts ...Option) {
+        config := &Config {
+            // default value
+        }
+
+        for _, o := opts {
+            o(config)
+        }
+        //...
+    }
+
+    //opts.go
+    func WithSugar(s uint32) Options {//...}
+    func WithSugarCalories(s uint32) Options {//...}
+    func WithIce(s uint32) Options {//...}
+    func WithCream(s uint32) Options {//...}
+
+* Summary
+
+- Easy to use
+- Simple to implement and can grow over time
+- Well documented
+- Enable default behaviour without nil value
+- Scoped complex value operation
+
+* Reference
+
+Blog post
+
+.link https://commandcenter.blogspot.co.id/2014/01/self-referential-functions-and-design.html
+.link https://dave.cheney.net/2014/10/17/functional-options-for-friendly-apis
+
+Projects
+
+.link https://github.com/knq/chromedp
+.link https://github.com/knq/envcfg
+.link https://github.com/knq/firebase
+
+* Materials
+
+The materials for this presentation are available on GitHub:
+
+.link https://github.com/randycahyana/talks/01-FuntionalOptions
+
+.image images/gopher.png 500 500
+
