@@ -8,9 +8,10 @@ randy@brank.as
 
 * What is Functional Options ?
 
-- Solve configuration problems.
-- Idiomatic
-- Commonly used in Go 
+- One of the design solutions that commonly used in Go, to solve *configuration* *problems*
+- Make use of functional style programming
+
+.image images/gopher.png 500 500
 
 * Scenario
 
@@ -224,7 +225,7 @@ Cons
 - Simple to implement and can grow over time
 - Well documented
 - Enable default behaviour without nil value
-- Scoped complex value operation
+- Scope complex value operation inside each options
 
 * Reference
 
