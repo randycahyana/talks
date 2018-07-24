@@ -28,12 +28,18 @@ Usage:
 
 - A Go package to drive the browsers.
 - Provides high-level API, and reusable actions.
-- No external dependencies other than the brower itself.
+- No external dependencies other than the browser itself.
 - Supports on many modern browsers.
+
+The New Way
+
+- Go
+- Chromedp package
+- Chrome or any blink-based browsers
 
 * How it works?
 
-Under the hood chromedp utilize chrome DevTools Protocol.
+Under the hood chromedp utilize chrome DevTools protocol.
 
 - cdproto-gen generates Go code for the commands, events, and types from browser_protocol.json & js_protocol.json in the Chromium source tree
 .link https://github.com/chromedp/cdproto-gen
@@ -107,9 +113,18 @@ Also can be done in pool :)
 		}
 	}
 
-* Resources
+* Other Tooling
 
-.link https://www.youtube.com/watch?v=_7pWCg94sKw
+- chromedp-proxy is a simple command-line tool to proxy and log Chrome DevTools Protocol sessions sent from a CDP client to a CDP browser session.
+.link https://github.com/chromedp/chromedp-proxy
+- docker-chromium-builder project provides a Docker image, chromedp/chromium-builder
+.link https://github.com/chromedp/docker-chromium-builder
+- headless-shell project provides a Docker image, chromedp/headless-shell, containing a pre-built version of Chrome's headless-shell
+.link https://github.com/chromedp/docker-headless-shell
+
+* References
+
+.link https://www.youtube.com/watch?v=_7pWCg94sKw Chromedp talk in GopherconSG 2017
 .link https://chromedevtools.github.io/devtools-protocol/
 .link https://github.com/chromedp/chromedp
 .link https://github.com/chromedp/examples
