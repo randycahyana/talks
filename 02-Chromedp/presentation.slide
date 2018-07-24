@@ -1,0 +1,124 @@
+chromedp: A New Way to Drive the Web
+GoJakarta
+
+24 July 2018
+
+Randy Cahyana
+randy@brank.as
+
+* What is a web driver?
+
+WebDriver is a remote control interface that enables introspection and control of user agents. It provides a platform and language-neutral wire protocol as a way for out-of-process programs to remotely instruct the behavior of web browsers.
+
+Usage: 
+
+- Web scraping
+- Unit testing
+- Browser profiling
+
+* How? (The Old Way)
+
+- Go
+- Selenium package
+- Selenium (Hello Java)
+- Drivers (chrome driver, etc)
+- Chrome
+
+* Introducing chromedp
+
+- A Go package to drive the browsers.
+- Provides high-level API, and reusable actions.
+- No external dependencies other than the brower itself.
+- Supports on many modern browsers.
+
+* How it works?
+
+Under the hood chromedp utilize chrome DevTools Protocol.
+
+- cdproto-gen generates Go code for the commands, events, and types from browser_protocol.json & js_protocol.json in the Chromium source tree
+.link https://github.com/chromedp/cdproto-gen
+- cdproto contains the generated commands, types, and events to use as a lower level API in chromedp.
+.link https://github.com/chromedp/cdproto
+- chromedp contains the higher-level API to interact with the browsers.
+.link https://github.com/chromedp/chromedp
+
+* Difference with other protocol driver libraries
+
+JS API
+
+    let client = await CDP();
+    const {Network, Page} = client;
+    Network.requestWillBeSent((params) => {
+        console.log(params.request.url);
+    });
+    await Network.enable();
+    await Page.enable();
+    await Page.navigate({url: 'https://github.com'});
+    await Page.loadEventFired();
+Chromedp API
+	
+	func navigate() chromedp.Tasks {
+		return chromedp.Tasks{
+			chromedp.Navigate(`https://golang.org/pkg/time/`),
+			chromedp.WaitVisible(`#footer`),
+		}
+	}
+
+
+* Quick Tutorial
+
+Create new chromedp instance using chrome headless mode
+
+	var cliOpts = []runner.CommandLineOption{
+		runner.NoDefaultBrowserCheck,
+		runner.NoFirstRun,
+		runner.Flag("headless", true),
+	}
+
+	c, err := chromedp.New(ctxt,
+		chromedp.WithRunnerOptions(cliOpts...),
+	)
+	...
+	err = c.Run(tasks())
+
+Also can be done in pool :)
+
+	pool, err := chromedp.NewPool()
+	if err != nil {
+		log.Fatal(err)
+	}
+	c, err := pool.Allocate(ctx, cliOpts...)
+	...
+	err = c.Run(tasks())
+
+* Chromedp Tasks
+
+`chromedp.Tasks` wraps a slice of `chromedp.Action` that will be executed sequentially.
+
+	func googleSearch(q, text string, site, res *string) chromedp.Tasks {
+		sel := fmt.Sprintf(`//a[text()[contains(., '%s')]]`, text)
+		return chromedp.Tasks{
+			chromedp.Navigate(`https://www.google.com`),
+			chromedp.WaitVisible(`#hplogo`, chromedp.ByID),
+			chromedp.SendKeys(`#lst-ib`, q+"\n", chromedp.ByID),
+			chromedp.WaitVisible(`#res`, chromedp.ByID),
+			chromedp.Click(sel),
+			chromedp.Text(`/html/body/div[2]/div/div[2]/section[1]/div[2]/div[1]/h1`, res),
+		}
+	}
+
+* Resources
+
+.link https://www.youtube.com/watch?v=_7pWCg94sKw
+.link https://chromedevtools.github.io/devtools-protocol/
+.link https://github.com/chromedp/chromedp
+.link https://github.com/chromedp/examples
+
+* Materials
+
+The materials for this presentation are available on GitHub:
+
+.link https://github.com/rnd/talks/02-Chromedp
+
+.image images/gopher.png 500 500
+
